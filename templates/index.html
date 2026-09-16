@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FixItAI | AI Chat</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#070a12;color:#edf2ff;font-family:Inter,system-ui,sans-serif}
+.app{width:min(1000px,100%);min-height:100vh;margin:auto;padding:24px;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 20px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:15px;background:linear-gradient(135deg,#7b61ff,#20d6d6);box-shadow:0 0 35px #5b54ff55}
+h1{font-size:20px;margin:0} .sub{font-size:12px;color:#8995b3;margin-top:3px}
+.online{font-size:12px;color:#7ef0ae;border:1px solid #24563e;border-radius:99px;padding:7px 11px}
+.chat{flex:1;min-height:65vh;background:#0d1220;border:1px solid #20283d;border-radius:26px;padding:20px;overflow:auto;box-shadow:0 25px 80px #0008}
+.row{display:flex;margin:12px 0} .row.user{justify-content:flex-end}
+.bubble{max-width:78%;padding:13px 15px;border-radius:18px;line-height:1.55;white-space:pre-wrap}
+.bot .bubble{background:#161d2e;border:1px solid #28314a} .user .bubble{background:#645bff}
+form{display:flex;gap:10px;margin-top:15px}
+textarea{flex:1;min-height:54px;resize:none;background:#0d1220;border:1px solid #28314a;color:#fff;border-radius:18px;padding:14px;font:inherit}
+button{border:0;border-radius:17px;padding:0 24px;background:linear-gradient(135deg,#7b61ff,#20bfe0);color:#fff;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}
+.note{text-align:center;color:#68738e;font-size:11px;margin-top:9px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo"></div><div><h1>FixItAI</h1><div class="sub">Specialized AI assistant</div></div></div>
+  <div class="online">● Online</div>
+</header>
+<section class="chat" id="chat">
+  <div class="row bot"><div class="bubble">Hello! I’m FixItAI. Ask me a question related to my specialized domain.</div></div>
+</section>
+<form id="form">
+  <textarea id="input" placeholder="Type your question..." rows="1"></textarea>
+  <button id="send" type="submit">Send</button>
+</form>
+<div class="note">Powered by Gemini 3.6 Flash</div>
+</div>
+<script>
+const form=document.getElementById("form");
+const input=document.getElementById("input");
+const chat=document.getElementById("chat");
+const send=document.getElementById("send");
+
+function addMessage(role,text){
+  const row=document.createElement("div");
+  row.className="row "+role;
+  const bubble=document.createElement("div");
+  bubble.className="bubble";
+  bubble.textContent=text;
+  row.appendChild(bubble);
+  chat.appendChild(row);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+form.addEventListener("submit",async(event)=>{
+  event.preventDefault();
+  const message=input.value.trim();
+  if(!message)return;
+  addMessage("user",message);
+  input.value="";
+  send.disabled=true;
+  try{
+    const response=await fetch("/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message})
+    });
+    const data=await response.json();
+    addMessage("bot",data.reply||data.error||"Something went wrong.");
+  }catch(error){
+    addMessage("bot","Connection error. Please try again.");
+  }finally{
+    send.disabled=false;
+    input.focus();
+  }
+});
+</script>
+</body>
+</html>
