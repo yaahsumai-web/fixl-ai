@@ -1,1 +1,4 @@
-Flask\ngoogle-genai\npython-dotenv\ngunicorn\n
+Flask
+google-genai
+python-dotenv
+gunicorn
